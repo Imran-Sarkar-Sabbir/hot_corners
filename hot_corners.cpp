@@ -19,52 +19,41 @@ enum Cornor_point
     bottom_right
 };
 
-int calculate_mouse_position(int rootX, int rootY, int left, int right, int height)
+int calculate_mouse_position(Display *display, int &screen, int height, int width)
 {
-    // mouse top
-    if (rootY == 0)
+
+    XEvent event;
+    XQueryPointer(display, RootWindow(display, screen),
+                  &event.xbutton.root, &event.xbutton.window,
+                  &event.xbutton.x_root, &event.xbutton.y_root,
+                  &event.xbutton.x, &event.xbutton.y,
+                  &event.xbutton.state);
+
+    if (event.xbutton.x == 0 && event.xbutton.y == 0)
     {
-        if (rootX == left)
-        {
-            return top_left;
-        }
-        else if (rootX == right)
-        {
-            return top_right;
-        }
+        return top_left;
     }
-    // mouse bottom
-    else if (rootY == height)
+    else if (event.xbutton.x == width - 1 && event.xbutton.y == 0)
     {
-        if (rootX == left)
-        {
-            return bottom_left;
-        }
-        else if (rootX == right)
-        {
-            return bottom_right;
-        }
+        return top_right;
+    }
+    else if (event.xbutton.x == 0 && event.xbutton.y == height - 1)
+    {
+        return bottom_left;
+    }
+    else if (event.xbutton.x == width - 1 && event.xbutton.y == height - 1)
+    {
+        return bottom_right;
     }
 
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait for 100 milliseconds
     return none;
 }
 
-void handle_mouse_movement(Display *display, Window &rootWindow, int left, int right, int height)
+void handle_mouse_movement(Display *display, int &screen, int &height, int &width)
 {
-    int rootX, rootY;
-    int winX, winY;
-    unsigned int mask;
-    Window rootReturn, childReturn;
 
-    if (XQueryPointer(display, rootWindow, &rootReturn, &childReturn,
-                      &rootX, &rootY, &winX, &winY, &mask) == False)
-    {
-        std::cerr << "Unable to query pointer" << std::endl;
-        return;
-    }
-
-    int cursor_status = calculate_mouse_position(rootX, rootY, left, right, height);
-
+    int cursor_status = calculate_mouse_position(display, screen, height, width);
 
     if (cursor_status == none)
     {
@@ -92,28 +81,9 @@ void handle_mouse_movement(Display *display, Window &rootWindow, int left, int r
     }
 }
 
-void calculate_values(Display *display, int &right, int &height)
-{
-    XRRScreenResources *screens = XRRGetScreenResources(display, DefaultRootWindow(display));
-    XRRCrtcInfo *info = NULL;
-    int i = 0;
-    for (i = 0; i < screens->ncrtc; i++)
-    {
-        info = XRRGetCrtcInfo(display, screens, screens->crtcs[i]);
-        right += info->width;
-        if (height < info->height)
-        {
-            height = info->height;
-        }
-        XRRFreeCrtcInfo(info);
-    }
-
-    XRRFreeScreenResources(screens);
-}
-
 int main_loop()
 {
-    
+
     Display *display = XOpenDisplay(nullptr);
     if (display == nullptr)
     {
@@ -121,18 +91,13 @@ int main_loop()
         return 1;
     }
     Window rootWindow = DefaultRootWindow(display);
+    int screen = DefaultScreen(display);
+    int width = DisplayWidth(display, screen);
+    int height = DisplayHeight(display, screen);
 
-    int left = 0, right = 0, height = 0;
-    calculate_values(display, right, height);
     while (!should_terminate)
     {
-        if (!right || !height)
-        {
-            return 1;
-        }
-
-
-        handle_mouse_movement(display, rootWindow, left, right - 1, height - 1);
+        handle_mouse_movement(display, screen, height, width);
     }
 
     XCloseDisplay(display);
