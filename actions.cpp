@@ -89,3 +89,23 @@ void handle_bottom_left_handler()
     XCloseDisplay(display);
 }
 
+
+void handle_bottom_right_handler()
+{
+    Display *display = XOpenDisplay(nullptr);
+    if (display == nullptr)
+    {
+        std::cerr << "Unable to open X display" << std::endl;
+        return;
+    }
+
+    // Simulate Windows (Super) key press
+    sendKey(display, XK_Super_L, true);  // Press Windows key
+    std::this_thread::sleep_for(std::chrono::milliseconds(200)); // Wait for 200 milliseconds
+    sendKey(display, XK_Super_L, false); // Release Windows key
+
+
+    // Close the display connection
+    XCloseDisplay(display);
+}
+

@@ -6,6 +6,7 @@
 void handle_top_left_handler();
 void handle_top_right_handler();
 void handle_bottom_left_handler();
+void handle_bottom_right_handler();
 
 bool isHotCornerEnabled = false;
 bool should_terminate = false;
@@ -76,6 +77,10 @@ void handle_mouse_movement(Display *display, int &screen, int &height, int &widt
 
         case bottom_left:
             handle_bottom_left_handler();
+            break;
+
+        case bottom_right:
+            handle_bottom_right_handler();
             break;
         }
     }
