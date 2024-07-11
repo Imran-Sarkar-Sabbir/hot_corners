@@ -112,34 +112,35 @@ int main_loop()
 int main()
 {
 
-    Display *display = XOpenDisplay(nullptr);
-    if (display == nullptr)
-    {
-        std::cerr << "Unable to open X display" << std::endl;
-        return 1;
-    }
-    Window rootWindow = DefaultRootWindow(display);
+    // Display *display = XOpenDisplay(nullptr);
+    // if (display == nullptr)
+    // {
+    //     std::cerr << "Unable to open X display" << std::endl;
+    //     return 1;
+    // }
+    // Window rootWindow = DefaultRootWindow(display);
 
-    int eventBase, errorBase;
-    if (!XRRQueryExtension(display, &eventBase, &errorBase))
-    {
-        std::cerr << "Xrandr extension is not supported" << std::endl;
-        XCloseDisplay(display);
-        return 1;
-    }
+    // int eventBase, errorBase;
+    // if (!XRRQueryExtension(display, &eventBase, &errorBase))
+    // {
+    //     std::cerr << "Xrandr extension is not supported" << std::endl;
+    //     XCloseDisplay(display);
+    //     return 1;
+    // }
 
-    XRRSelectInput(display, rootWindow, RRScreenChangeNotifyMask);
+    // XRRSelectInput(display, rootWindow, RRScreenChangeNotifyMask);
 
-    while (1)
-    {
+    // while (1)
+    // {
 
         std::thread thread(main_loop);
+        thread.join();
 
-        XEvent event;
-        XNextEvent(display, &event);
-        std::cout << "screen changed" << std::endl;
-        should_terminate = true;
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // Wait for 200 milliseconds
-        should_terminate = false;
-    }
+    //     XEvent event;
+    //     XNextEvent(display, &event);
+    //     std::cout << "screen changed" << std::endl;
+    //     should_terminate = true;
+    //     std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // Wait for 200 milliseconds
+    //     should_terminate = false;
+    // }
 }
